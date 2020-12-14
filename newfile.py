@@ -86,8 +86,9 @@ while(True):
 		print(conect(url, index))
 	else:
 		conect(url,index)
-		d = html_content(i, conect(url,index))
-		print(d)
+		dataframe = html_content(i, conect(url,index))
+		print(dataframe)
+		
 		if(d == "disconec"):
 			i -=1
 		else:
