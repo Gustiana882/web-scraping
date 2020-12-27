@@ -1,78 +1,66 @@
-import pandas as pd
-import requests
 from bs4 import BeautifulSoup
+import pandas
+import requests
+import re
 
-def conect(index):
-	df = pd.read_csv("inventory_export_1.csv")
+		
 
-#new_file = pd.read_csv("test.csv")
-#data = {"sku" : [] , "Title" : [], "Link" : [], 	"Image" : []}
-#dft = pd.DataFrame(data)
-#dft.to_csv("test.csv")
-	
-
-	
-
-	id =[]
-	title = []
-	page = []
-	image1 = []
-
-#ambil data satupersatu 3125 3125
-	i = int(index)
-	while (i < len(df["SKU"])):
-		sku = df.loc[i]["SKU"]
-	
-	
-	
-
-#https://www.truebrands.com/catalogsearch/result/?q=7678
-#https://www.truebrands.com/chateau-2-bottle-vintage-trunk-wine-box-by-twine.html
-
-		url = requests.get("https://www.truebrands.com/catalogsearch/result/?q="+sku)
+class Scrape:
+	def __init__(self):
+		#menyiapkan array kosong untuk menyimpan data
+		self.array  = []
+		self.url = input("masukan alamat website yang ingin di scrap : ")
+		self.one_page()
+				
+	def one_page(self):
 		try:
-			soup = BeautifulSoup(url.content, "html.parser")
-			status = soup.find("div", "notice").text
-
-			print(str(i)+'. '+sku+'Your search returned no results.     ')
-			i+=1
-
-
+			self.get = requests.get("https://"+self.url)
+			print("status url "+self.get.status_code+" ok")
+			self.content = BeautifulSoup(self.get.content, "html.parser")
 		except:
-		#print("barang ada")
-
-		#mengambil data html card product
-			product = soup.find("a", "product-item-link")
-		#mengambil link sesuai sku
-			link = product["href"]
-
-			print(str(i)+". "+sku+" link : "+link)
-
-		#masuk ke link detail
-			uri = requests.get(str(link))
-			parse = BeautifulSoup(uri.content,"html.parser")
-			img = parse.find_all("a","mt-thumb-switcher")
+			print("conneting error")
+			Scrape()
+		
+		print("pilih html yang ingin di ambil")
+		print("[1] Alamat link")
+		print("[2] String")
+		
+		sp = input("masukan pilihan : ")
+		if(str(sp) == "1"):
+			self.find_link()
+		elif(str(sp) == "2"):
+			self.find_string()
+		else:
+			print("menu salah")
 	
+	def find_link(self):
+		self.cls = input("masukan attr class : ")
+		print("==== masukan base url link agar pencarian lebih akurat =====")
+		self.link = input("masukan base url : ")
 		
-			d=[]
-			for g in img:
-				d.append(g["href"])
+		self.data = self.content.find_all(href=re.compile(str(self.link)), class_=re.compile(str(self.cls)))
+		for data in self.data:
+			#print(data)
+			self.array.append(data["href"])
+			
+		self.dataframe()
+			
+	def find_string(self):
+		self.tag = input("masukan tag html : ")
+		self.cls = input("masukan attr class : ")
 		
-		
-			id.append(sku)
-			title.append(df.loc[i]["Title"])
-			page.append(link)
-			image1.append(d)
-		
-			i+=1
+		self.data = self.content.find_all(str(self.tag) , class_=re.compile(str(self.cls)))
+		for data in self.data:
+			#print(data)
+			self.array.append(data.text)
+			
+		self.dataframe()
 
-			data = {"sku" : id , "Title" : title, "Link" : page , 	"Image" : image1}
-			data_new = pd.DataFrame(data)
+	def dataframe(self):
+		data_array = {"Scrape data" : self.array}
+		self.df = pandas.DataFrame(data_array)
+		print(self.df)	
+
 		
-			data_new.to_csv("test.csv")
-		
+Scrape()
 
-
-
-index = 4826
-conect(index)
