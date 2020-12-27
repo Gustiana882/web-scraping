@@ -15,7 +15,7 @@ class Scrape:
 	def one_page(self):
 		try:
 			self.get = requests.get("https://"+self.url)
-			print("status url "+self.get.status_code+" ok")
+			print("status url "+str(self.get.status_code)+" ok")
 			self.content = BeautifulSoup(self.get.content, "html.parser")
 		except:
 			print("conneting error")
